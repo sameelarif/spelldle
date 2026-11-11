@@ -193,7 +193,7 @@ export function Game() {
 
   function onPlayPointerDown(event: PointerEvent<HTMLButtonElement>) {
     if (event.pointerType === 'mouse' && event.button !== 0) return
-    skipPlayClick.current = true
+    skipPlayClick.current = false
     event.currentTarget.setPointerCapture(event.pointerId)
     volumeDragRef.current = {
       id: event.pointerId,
@@ -201,7 +201,6 @@ export function Game() {
       start: volumeRef.current,
       moved: false,
     }
-    void playWord(false)
   }
 
   function onPlayPointerMove(event: PointerEvent<HTMLButtonElement>) {
@@ -210,6 +209,7 @@ export function Game() {
     const dy = drag.y - event.clientY
     if (!drag.moved && Math.abs(dy) < 8) return
     drag.moved = true
+    skipPlayClick.current = true
     setVolumeDrag(true)
     applyVolume(drag.start + dy / 120)
   }
@@ -217,6 +217,7 @@ export function Game() {
   function endVolumeDrag(event: PointerEvent<HTMLButtonElement>) {
     const drag = volumeDragRef.current
     if (!drag || drag.id !== event.pointerId) return
+    if (drag.moved) skipPlayClick.current = true
     volumeDragRef.current = null
     setVolumeDrag(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
