@@ -19,6 +19,7 @@ import {
   speechStatus,
   stopSpeaking,
 } from '../lib/speech'
+import { shareText } from '../lib/share'
 import { dayRecord, loadStore, recordGuess } from '../lib/storage'
 import type { Store, Word, WordResult } from '../lib/types'
 
@@ -43,24 +44,6 @@ function boardLine(result: WordResult | null): string {
   if (result.perfect) return 'solid'
   if (result.score >= 70) return 'close'
   return 'miss'
-}
-
-function shareText(
-  date: string,
-  results: Array<WordResult | null>,
-  streak: number,
-): string {
-  const lines = results.map((item, i) => {
-    const mark = item?.perfect ? 'solid' : (item?.score ?? 0) >= 70 ? 'close' : 'miss'
-    const glyph = mark === 'solid' ? '#' : mark === 'close' ? '+' : '.'
-    return `${i + 1} ${glyph} ${item?.score ?? 0}`
-  })
-  return [
-    `Spelldle · ${formatShortDate(date)}`,
-    ...lines,
-    `${totalScore(results)}/300 · streak ${streak}`,
-    '(no words. the bee insists.)',
-  ].join('\n')
 }
 
 function flavorTotal(score: number): string {
