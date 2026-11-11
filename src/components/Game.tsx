@@ -362,33 +362,35 @@ export function Game() {
               else submit()
             }}
           >
-            <Tiles
-              guess={phase === 'reveal' ? (revealed?.guess ?? guess) : guess}
-              active={phase === 'play'}
-              perfect={revealed?.perfect}
-              onActivate={focusInput}
-            />
-            <label className="input-label" htmlFor="spelling">
-              Your spelling
-            </label>
-            <input
-              id="spelling"
-              ref={inputRef}
-              className="spell-input"
-              value={phase === 'reveal' ? (revealed?.guess ?? guess) : guess}
-              onChange={(event) => onGuessChange(event.target.value)}
-              onInput={(event) => onGuessChange(event.currentTarget.value)}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              enterKeyHint="done"
-              maxLength={24}
-              disabled={phase !== 'play'}
-              placeholder="type what you heard"
-              aria-invalid={emptyError}
-              name="spelling"
-            />
+            <div className="spell-field">
+              <label className="sr-only" htmlFor="spelling">
+                Your spelling
+              </label>
+              <Tiles
+                guess={phase === 'reveal' ? (revealed?.guess ?? guess) : guess}
+                active={phase === 'play'}
+                perfect={revealed?.perfect}
+                onActivate={focusInput}
+              />
+              <input
+                id="spelling"
+                ref={inputRef}
+                className="spell-input"
+                value={phase === 'reveal' ? (revealed?.guess ?? guess) : guess}
+                onChange={(event) => onGuessChange(event.target.value)}
+                onInput={(event) => onGuessChange(event.currentTarget.value)}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                enterKeyHint="done"
+                maxLength={24}
+                disabled={phase !== 'play'}
+                placeholder="type what you heard"
+                aria-invalid={emptyError}
+                name="spelling"
+              />
+            </div>
             {emptyError && (
               <p className="error" role="alert">
                 The judges decline to grade a blank stare.
