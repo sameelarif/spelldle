@@ -278,7 +278,7 @@ export function Game() {
   }
 
   async function copyScore() {
-    const text = shareText(date, results, store.streak)
+    const text = shareText(date, results)
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -305,10 +305,6 @@ export function Game() {
         </div>
         <p className="date-line">
           <time dateTime={date}>{formatLongDate(date)}</time>
-          <span aria-hidden="true"> · </span>
-          <span className="streak">
-            {store.streak > 0 ? `${store.streak}-day streak` : 'No streak yet'}
-          </span>
         </p>
       </header>
 
@@ -317,8 +313,6 @@ export function Game() {
           date={date}
           puzzle={puzzle}
           results={results}
-          streak={store.streak}
-          bestStreak={store.bestStreak}
           copied={copied}
           onCopy={() => void copyScore()}
         />
@@ -588,16 +582,12 @@ function Results({
   date,
   puzzle,
   results,
-  streak,
-  bestStreak,
   copied,
   onCopy,
 }: {
   date: string
   puzzle: [Word, Word, Word]
   results: Array<WordResult | null>
-  streak: number
-  bestStreak: number
   copied: boolean
   onCopy: () => void
 }) {
@@ -627,10 +617,6 @@ function Results({
           )
         })}
       </ol>
-      <p className="streak-line">
-        Streak {streak}
-        {bestStreak > 0 ? ` · best ${bestStreak}` : ''}
-      </p>
       <button type="button" className="submit" onClick={onCopy}>
         {copied ? 'Copied. Brag elsewhere.' : 'Copy score (no spoilers)'}
       </button>

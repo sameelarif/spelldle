@@ -1,13 +1,9 @@
-import { yesterdayISO } from './date'
 import type { DayRecord, Store, WordResult } from './types'
 
 const KEY = 'spelldle.v1'
 
 const empty = (): Store => ({
   version: 1,
-  streak: 0,
-  bestStreak: 0,
-  lastCompleted: null,
   days: {},
 })
 
@@ -19,9 +15,6 @@ export function loadStore(): Store {
     if (parsed?.version !== 1 || typeof parsed.days !== 'object') return empty()
     return {
       version: 1,
-      streak: Number(parsed.streak) || 0,
-      bestStreak: Number(parsed.bestStreak) || 0,
-      lastCompleted: parsed.lastCompleted ?? null,
       days: parsed.days ?? {},
     }
   } catch {
@@ -58,30 +51,7 @@ export function recordGuess(
   results[index] = result
   const completed = results.every(Boolean)
   const nextDay: DayRecord = { ...day, answers, results, completed }
-  const days = { ...store.days, [date]: nextDay }
-
-  if (!completed) {
-    const next = { ...store, days }
-    saveStore(next)
-    return next
-  }
-
-  let streak = store.streak
-  if (store.lastCompleted === date) {
-    streak = store.streak
-  } else if (store.lastCompleted === yesterdayISO(date)) {
-    streak = store.streak + 1
-  } else {
-    streak = 1
-  }
-
-  const next: Store = {
-    ...store,
-    days,
-    streak,
-    bestStreak: Math.max(store.bestStreak, streak),
-    lastCompleted: date,
-  }
+  const next: Store = { ...store, days: { ...store.days, [date]: nextDay } }
   saveStore(next)
   return next
 }

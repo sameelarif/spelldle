@@ -32,8 +32,5 @@ export type DayRecord = {
 
 export type Store = {
   version: 1
-  streak: number
-  bestStreak: number
-  lastCompleted: string | null
   days: Record<string, DayRecord>
 }

@@ -39,13 +39,6 @@ export function formatShortDate(iso: string): string {
   })
 }
 
-export function yesterdayISO(iso: string): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  const date = new Date(y, m - 1, d)
-  date.setDate(date.getDate() - 1)
-  return localDateISO(date)
-}
-
 export function tomorrowName(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)

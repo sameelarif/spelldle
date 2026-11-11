@@ -22,10 +22,7 @@ export function scoreRow(score: number, perfect: boolean): string {
 export function shareText(
   date: string,
   results: Array<WordResult | null>,
-  streak: number,
 ): string {
   const rows = results.map((item) => scoreRow(item?.score ?? 0, Boolean(item?.perfect)))
-  const total = totalScore(results)
-  const tail = streak > 0 ? `${total}/300 · 🔥${streak}` : `${total}/300`
-  return [`🐝 Spelldle #${challengeDay(date)}`, ...rows, tail].join('\n')
+  return [`🐝 Spelldle #${challengeDay(date)}`, ...rows, `${totalScore(results)}/300`].join('\n')
 }
