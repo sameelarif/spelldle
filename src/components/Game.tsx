@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { Bee } from './Bee'
 import {
   formatLongDate,
@@ -15,6 +15,7 @@ import {
 } from '../lib/score'
 import {
   speakSyllables,
+  setSpeakVolume,
   speakWord,
   speechStatus,
   stopSpeaking,
@@ -74,7 +75,17 @@ export function Game() {
   const [emptyError, setEmptyError] = useState(false)
   const [copied, setCopied] = useState(false)
   const [heard, setHeard] = useState(false)
+  const [volume, setVolume] = useState(1)
+  const [volumeDrag, setVolumeDrag] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const volumeRef = useRef(1)
+  const skipPlayClick = useRef(false)
+  const volumeDragRef = useRef<{
+    id: number
+    y: number
+    start: number
+    moved: boolean
+  } | null>(null)
   const guessRef = useRef(guess)
   const phaseRef = useRef(phase)
   const storeRef = useRef(store)
@@ -171,6 +182,54 @@ export function Game() {
     setSpeaking(false)
     if (!ok) setSpeechOk(false)
     focusInput()
+  }
+
+  function applyVolume(next: number) {
+    const value = Math.min(1, Math.max(0, next))
+    volumeRef.current = value
+    setVolume(value)
+    setSpeakVolume(value)
+  }
+
+  function onPlayPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    skipPlayClick.current = true
+    event.currentTarget.setPointerCapture(event.pointerId)
+    volumeDragRef.current = {
+      id: event.pointerId,
+      y: event.clientY,
+      start: volumeRef.current,
+      moved: false,
+    }
+    void playWord(false)
+  }
+
+  function onPlayPointerMove(event: PointerEvent<HTMLButtonElement>) {
+    const drag = volumeDragRef.current
+    if (!drag || drag.id !== event.pointerId) return
+    const dy = drag.y - event.clientY
+    if (!drag.moved && Math.abs(dy) < 8) return
+    drag.moved = true
+    setVolumeDrag(true)
+    applyVolume(drag.start + dy / 120)
+  }
+
+  function endVolumeDrag(event: PointerEvent<HTMLButtonElement>) {
+    const drag = volumeDragRef.current
+    if (!drag || drag.id !== event.pointerId) return
+    volumeDragRef.current = null
+    setVolumeDrag(false)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  function onPlayClick() {
+    if (skipPlayClick.current) {
+      skipPlayClick.current = false
+      return
+    }
+    void playWord(false)
   }
 
   async function playSyllables() {
@@ -276,14 +335,26 @@ export function Game() {
           <div className="play-wrap">
             <button
               type="button"
-              className={`play ${speaking ? 'is-speaking' : ''}`}
-              onClick={() => void playWord(false)}
+              className={`play ${speaking ? 'is-speaking' : ''} ${volumeDrag ? 'is-volume' : ''}`}
+              style={{ '--vol': volume } as CSSProperties}
+              onClick={onPlayClick}
+              onPointerDown={onPlayPointerDown}
+              onPointerMove={onPlayPointerMove}
+              onPointerUp={endVolumeDrag}
+              onPointerCancel={endVolumeDrag}
               aria-label={heard ? 'Hear the word again' : 'Hear the word'}
             >
+              <span className="vol-fill" aria-hidden="true" />
               <PlayIcon speaking={speaking} />
             </button>
-            <p className="play-label">
-              {speaking ? 'Speaking…' : heard ? 'Once more' : 'Hear it'}
+            <p className="play-label" aria-live="polite">
+              {volumeDrag
+                ? `${Math.round(volume * 100)}%`
+                : speaking
+                  ? 'Speaking…'
+                  : heard
+                    ? 'Once more'
+                    : 'Hear it'}
             </p>
             <p className="word-count">Word {index + 1} of 3</p>
           </div>

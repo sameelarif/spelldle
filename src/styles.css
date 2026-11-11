@@ -184,6 +184,7 @@ ol {
 }
 
 .play {
+  --vol: 1;
   width: 96px;
   height: 96px;
   border: 0;
@@ -193,7 +194,41 @@ ol {
   box-shadow: 0 8px 0 var(--rust-deep);
   display: grid;
   place-items: center;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.vol-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--vol) * 100%);
+  background: rgba(255, 250, 240, 0.22);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.play.is-volume .vol-fill {
+  opacity: 1;
+}
+
+.play > svg {
+  position: relative;
+  z-index: 1;
+}
+
+.play.is-volume,
+.play.is-volume:hover,
+.play.is-volume:active {
+  animation: none;
+  transform: translateY(0);
+  box-shadow: 0 8px 0 var(--rust-deep);
 }
 
 .play:focus-visible,
@@ -213,7 +248,7 @@ ol {
   box-shadow: 0 2px 0 var(--rust-deep);
 }
 
-.play.is-speaking {
+.play.is-speaking:not(.is-volume) {
   animation: pulse 1.1s ease-in-out infinite;
 }
 

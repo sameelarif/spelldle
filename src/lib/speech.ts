@@ -35,21 +35,33 @@ export function speechStatus(): SpeechStatus {
   return 'ok'
 }
 
+let currentUtterance: SpeechSynthesisUtterance | null = null
+let speakVolume = 1
+
+export function setSpeakVolume(volume: number) {
+  speakVolume = Math.min(1, Math.max(0, volume))
+  if (currentUtterance) currentUtterance.volume = speakVolume
+}
+
 export async function speak(text: string, rate = 0.86): Promise<boolean> {
   if (speechStatus() !== 'ok') return false
   await waitForVoices()
   window.speechSynthesis.cancel()
+  currentUtterance = null
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.rate = rate
   utterance.pitch = 1
+  utterance.volume = speakVolume
   utterance.lang = 'en-US'
   const voice = pickVoice()
   if (voice) utterance.voice = voice
+  currentUtterance = utterance
   return new Promise((resolve) => {
     let settled = false
     const finish = (ok: boolean) => {
       if (settled) return
       settled = true
+      if (currentUtterance === utterance) currentUtterance = null
       resolve(ok)
     }
     utterance.onend = () => finish(true)
@@ -76,5 +88,6 @@ export function speakSyllables(syllables: string): Promise<boolean> {
 }
 
 export function stopSpeaking(): void {
+  currentUtterance = null
   if (speechStatus() === 'ok') window.speechSynthesis.cancel()
 }
